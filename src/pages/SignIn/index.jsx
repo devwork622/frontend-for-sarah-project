@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from "axios";
 import {
   MDBContainer,
   MDBTabs,
@@ -9,20 +10,49 @@ import {
   MDBBtn,
   MDBIcon,
   MDBInput,
-  MDBCheckbox
+  MDBCheckbox,
+  MDBInputGroup
 }
   from 'mdb-react-ui-kit';
+import PhoneInput from 'react-phone-input-2'
+import 'react-phone-input-2/lib/style.css'
+import './style.scss';
 import CountrySelector from '../../components/CountrySelector';
+import { useDispatch, useSelector } from "react-redux"
+
 
 const SignIn = () => {
+  const baseURL = "http://localhost/email";
+  const [justifyActive, setJustifyActive] = useState('tab2');
+  const [email, setEmail] = useState("");
+  const [phoneValue, setPhoneValue] = useState('');
+  const storeValue = useSelector((store) => store);
+  const countryCode = storeValue.CountryCodeReducer.country_code;
+  let displayVerificationPhoneCode, phoneVerificationClass;
 
-  const [justifyActive, setJustifyActive] = useState('tab1');;
+  if (countryCode == "us" || countryCode == "ca" || countryCode == "gb") {
+    displayVerificationPhoneCode = <MDBInput wrapperClass='mb-4' label='Phone Verification Code' id='v_phone' type='text' />
+    phoneVerificationClass = "d-block";
+  }
+  else {
+    displayVerificationPhoneCode = "";
+    phoneVerificationClass = "d-none";
+  }
+
+  const emailVerify = () => {    
+    axios
+      .post(baseURL, {
+        body: email,
+      })
+      .then((res) => {
+        setPost(res.data);
+      });
+  }
 
   const handleJustifyClick = (value) => {
     if (value === justifyActive) {
       return;
     }
-
     setJustifyActive(value);
   };
 
@@ -49,24 +79,6 @@ const SignIn = () => {
           <div className="text-center mb-3">
             <p>Sign in with:</p>
 
-            <div className='d-flex justify-content-between mx-auto' style={{ width: '40%' }}>
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='facebook-f' size="sm" />
-              </MDBBtn>
-
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='twitter' size="sm" />
-              </MDBBtn>
-
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='google' size="sm" />
-              </MDBBtn>
-
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='github' size="sm" />
-              </MDBBtn>
-            </div>
-
             <p className="text-center mt-3">or:</p>
           </div>
 
@@ -88,39 +100,28 @@ const SignIn = () => {
           <div className="text-center mb-3">
             <p>Sign up with:</p>
 
-            <div className='d-flex justify-content-between mx-auto' style={{ width: '40%' }}>
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='facebook-f' size="sm" />
-              </MDBBtn>
-
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='twitter' size="sm" />
-              </MDBBtn>
-
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='google' size="sm" />
-              </MDBBtn>
-
-              <MDBBtn tag='a' color='none' className='m-1' style={{ color: '#1266f1' }}>
-                <MDBIcon fab icon='github' size="sm" />
-              </MDBBtn>
-            </div>
-
             <p className="text-center mt-3">or:</p>
           </div>
-
-          <MDBInput wrapperClass='mb-4' label='First Name' id='f_name' type='text' />
-          <MDBInput wrapperClass='mb-4' label='Last Name' id='l_name' type='text' />
-          <MDBInput wrapperClass='mb-4' label='Email' id='email' type='email' /> 
-          <MDBInput wrapperClass='mb-4' label='Confirm Email' id='c_email' type='email' /> 
-          <MDBInput wrapperClass='mb-4' label='Password' id='password' type='password' />
-          <MDBInput wrapperClass='mb-4' label='Confirm Password' id='c_password' type='password' />
-          <MDBInput wrapperClass='mb-4' label='Country' id='country' type='password' />
+          
+          <MDBInputGroup className='mb-4'>
+            <input className='form-control' placeholder="Email" id='email' type='email' onChange={e => { setEmail(e.target.value) }} />
+            <MDBBtn outline onClick={emailVerify}>Verify</MDBBtn>
+          </MDBInputGroup>
+          <MDBInput wrapperClass='mb-4' label='Email Verification Code' id='v_email' type='text' />          
           <div className='mb-4'>
             <CountrySelector />
           </div>
+          <div className='d-flex mb-4'>
+            <PhoneInput country={countryCode} value={phoneValue} onChange={e => { setPhoneValue(e) }} />
+            <MDBBtn outline className={phoneVerificationClass}>Verify</MDBBtn>
+          </div>
 
-          <div className='d-flex  mb-4'>
+          <div className='mb-4'>
+            {displayVerificationPhoneCode}
+          </div>
+
+
+          <div className='d-flex  mb-4' >
             <MDBCheckbox name='flexCheck' id='flexCheckDefault' label='I have read and agree to the terms' />
           </div>
 
